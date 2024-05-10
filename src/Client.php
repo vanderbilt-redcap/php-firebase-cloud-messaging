@@ -1,10 +1,10 @@
 <?php
-namespace sngrl\PhpFirebaseCloudMessaging;
+namespace Vanderbilt\PhpFirebaseCloudMessaging;
 
 use GuzzleHttp;
 
 /**
- * @author sngrl
+ * @author Vanderbilt
  */
 class Client implements ClientInterface
 {
@@ -27,7 +27,7 @@ class Client implements ClientInterface
      *
      * @param string $apiKey
      *
-     * @return \sngrl\PhpFirebaseCloudMessaging\Client
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Client
      */
     public function setApiKey($apiKey)
     {
@@ -40,7 +40,7 @@ class Client implements ClientInterface
      *
      * @param string $url
      *
-     * @return \sngrl\PhpFirebaseCloudMessaging\Client
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Client
      */
     public function setProxyApiUrl($url)
     {

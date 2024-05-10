@@ -1,11 +1,11 @@
 <?php
-namespace sngrl\PhpFirebaseCloudMessaging\Tests;
+namespace Vanderbilt\PhpFirebaseCloudMessaging\Tests;
 
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Recipient;
-use sngrl\PhpFirebaseCloudMessaging\Message;
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Topic;
-use sngrl\PhpFirebaseCloudMessaging\Notification;
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Device;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Recipient;
+use Vanderbilt\PhpFirebaseCloudMessaging\Message;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Topic;
+use Vanderbilt\PhpFirebaseCloudMessaging\Notification;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Device;
 
 class MessageTest extends PhpFirebaseCloudMessagingTestCase
 {

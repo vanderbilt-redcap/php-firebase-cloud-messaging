@@ -1,12 +1,12 @@
 <?php
-namespace sngrl\PhpFirebaseCloudMessaging;
+namespace Vanderbilt\PhpFirebaseCloudMessaging;
 
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Recipient;
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Topic;
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Device;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Recipient;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Topic;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Device;
 
 /**
- * @author sngrl
+ * @author Vanderbilt
  */
 class Message implements \JsonSerializable
 {
@@ -35,7 +35,7 @@ class Message implements \JsonSerializable
      *
      * @param Recipient $recipient
      *
-     * @return \sngrl\PhpFirebaseCloudMessaging\Message
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Message
      */
     public function addRecipient(Recipient $recipient)
     {

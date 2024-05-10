@@ -1,9 +1,9 @@
 <?php
-namespace sngrl\PhpFirebaseCloudMessaging\Tests;
+namespace Vanderbilt\PhpFirebaseCloudMessaging\Tests;
 
-use sngrl\PhpFirebaseCloudMessaging\Client;
-use sngrl\PhpFirebaseCloudMessaging\Recipient\Topic;
-use sngrl\PhpFirebaseCloudMessaging\Message;
+use Vanderbilt\PhpFirebaseCloudMessaging\Client;
+use Vanderbilt\PhpFirebaseCloudMessaging\Recipient\Topic;
+use Vanderbilt\PhpFirebaseCloudMessaging\Message;
 
 use GuzzleHttp;
 use GuzzleHttp\Psr7\Response;
