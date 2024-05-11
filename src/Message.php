@@ -53,15 +53,15 @@ class Message implements \JsonSerializable
 
     public function setNotification(Notification $notification)
     {
-        $this->notification = $notification;
+        $this->message->notification = $notification;
         return $this;
     }
 
-    public function setMessage(Message $message)
+    /*public function setMessage(Message $message)
     {
         $this->message = $message;
         return $this;
-    }
+    }*/
     public function setCollapseKey($collapseKey)
     {
         $this->collapseKey = $collapseKey;
