@@ -59,7 +59,7 @@ class Client implements ClientInterface
      */
     public function send(Message $message)
     {
-        $output = $this->guzzleClient->post(
+        return $this->guzzleClient->post(
             $this->getApiUrl(),
             [
                 'headers' => [
@@ -69,7 +69,6 @@ class Client implements ClientInterface
                 'body' => json_encode($message)
             ]
         );
-        var_dump($output); die;
     }
 
     /**
