@@ -15,7 +15,7 @@ class Message implements \JsonSerializable
      */
     const MAX_TOPICS = 3;
     const MAX_DEVICES = 1000;
-    
+    private $message;
     private $notification;
     private $collapseKey;    
     private $priority;
@@ -53,7 +53,8 @@ class Message implements \JsonSerializable
 
     public function setNotification(Notification $notification)
     {
-        $this->notification = $notification;
+        //$this->notification = $notification;
+        $this->message = $notification;
         return $this;
     }
 
