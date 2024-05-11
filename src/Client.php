@@ -59,6 +59,8 @@ class Client implements ClientInterface
      */
     public function send(Message $message)
     {
+        echo $this->apiKey;
+        var_dump($message); die;
         return $this->guzzleClient->post(
             $this->getApiUrl(),
             [
