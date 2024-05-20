@@ -166,7 +166,11 @@ class Message implements \JsonSerializable
         }
         
         if (count($this->recipients) == 1) {
-            $jsonData['to'] = $this->createTarget();    
+            if ($this->recipientType == Device::class) {
+                $jsonData['token'] = $this->createTarget();
+            } else {
+                $jsonData['topic'] = $this->createTarget();
+            }
         } elseif ($this->recipientType == Device::class) {
             $jsonData['registration_ids'] = $this->createTarget();
         } else {
@@ -198,7 +202,7 @@ class Message implements \JsonSerializable
             case Topic::class:
                 
                 if ($recipientCount == 1) {
-                    return sprintf('/topics/%s', current($this->recipients)->getName());    
+                    return sprintf('%s', current($this->recipients)->getName());
                     
                 } else if ($recipientCount > self::MAX_TOPICS) {
                     throw new \OutOfRangeException(sprintf('Message topic limit exceeded. Firebase supports a maximum of %u topics.', self::MAX_TOPICS));

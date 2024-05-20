@@ -9,10 +9,14 @@ use GuzzleHttp;
 class Client implements ClientInterface
 {
     const DEFAULT_API_URL = 'https://fcm.googleapis.com/fcm/send';
+    const HTTPV1_API_URL_PREFIX = 'https://fcm.googleapis.com/v1/projects/';
+    const HTTPV1_API_URL_POSTEFIX = '/messages:send';
     const DEFAULT_TOPIC_ADD_SUBSCRIPTION_API_URL = 'https://iid.googleapis.com/iid/v1:batchAdd';
     const DEFAULT_TOPIC_REMOVE_SUBSCRIPTION_API_URL = 'https://iid.googleapis.com/iid/v1:batchRemove';
 
     private $apiKey;
+    private $accessToken;
+    private $projectId;
     private $proxyApiUrl;
     private $guzzleClient;
 
@@ -59,14 +63,16 @@ class Client implements ClientInterface
      */
     public function send(Message $message)
     {
+        $param = ['message' => $message];
+
         return $this->guzzleClient->post(
-            $this->getApiUrl(),
+            $this->getHTTPV1ApiUrl(),
             [
                 'headers' => [
-                    'Authorization' => sprintf('key=%s', $this->apiKey),
+                    'Authorization' => sprintf('Bearer %s', $this->accessToken),
                     'Content-Type' => 'application/json'
                 ],
-                'body' => json_encode($message)
+                'body' => json_encode($param)
             ]
         );
     }
@@ -126,5 +132,49 @@ class Client implements ClientInterface
     private function getApiUrl()
     {
         return isset($this->proxyApiUrl) ? $this->proxyApiUrl : self::DEFAULT_API_URL;
+    }
+
+    /**
+     * Set your server access token here
+     *
+     * @param string $accessToken
+     *
+     * @return void
+     */
+    public function setAccessToken($accessToken)
+    {
+        $this->accessToken = $accessToken;
+    }
+
+    /**
+     * Set your project ID
+     *
+     * @param string $projectId
+     *
+     * @return void
+     */
+    public function setProjectId($projectId)
+    {
+        $this->projectId = $projectId;
+    }
+
+    /**
+     * Build endpoint URL for Firebase HTTP V1 API
+     *
+     * @return string
+     */
+    private function getHTTPV1ApiUrl()
+    {
+        return self::HTTPV1_API_URL_PREFIX.$this->getProjectId().self::HTTPV1_API_URL_POSTEFIX;
+    }
+
+    /**
+     * Get your project ID
+     *
+     * @return string
+     */
+    public function getProjectId()
+    {
+        return $this->projectId;
     }
 }
