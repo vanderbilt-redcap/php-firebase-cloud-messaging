@@ -53,6 +53,18 @@ class Client implements ClientInterface
     }
 
     /**
+     * add your server access token here
+     *
+     * @param string $accessToken
+     *
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Client
+     */
+    public function setAccessToken($accessToken)
+    {
+        $this->accessToken = $accessToken;
+        return $this;
+    }
+    /**
      * sends your notification to the google servers and returns a guzzle repsonse object
      * containing their answer.
      *
@@ -65,16 +77,48 @@ class Client implements ClientInterface
     {
         $param = ['message' => $message];
 
-        return $this->guzzleClient->post(
-            $this->getHTTPV1ApiUrl(),
-            [
-                'headers' => [
-                    'Authorization' => sprintf('Bearer %s', $this->accessToken),
-                    'Content-Type' => 'application/json'
-                ],
-                'body' => json_encode($param)
-            ]
-        );
+        // FCM HTTP V1 does not support sending notifications to multiple devices (supported only in legacy API via registration_tokens
+        // So, Adding topic subscription, sending notification to topic, then remove topic subscription
+        $recipients = $message->getRecipients();
+        if (count($recipients) > 1) {
+            $tokens = [];
+            foreach ($recipients as $recipient) {
+                $tokens[] = $recipient->getToken();
+            }
+            $topic = "Topic_".date("YmdHis")."_".substr(md5(rand()), 0, 4);
+            $response = $this->addTopicSubscription($topic, $tokens);
+            if ($response->getStatusCode() == 200) {
+                $messageArr = json_decode(json_encode($param), true);
+                unset($messageArr['message']['registration_ids']);
+                $messageArr['message']['topic'] = $topic;
+                print_r($messageArr);
+                $output = $this->guzzleClient->post(
+                                    $this->getHTTPV1ApiUrl(),
+                                    [
+                                        'headers' => [
+                                            'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                                            'Content-Type' => 'application/json'
+                                        ],
+                                        'body' => json_encode($messageArr)
+                                    ]
+                );
+            }
+            $response = $this->removeTopicSubscription($topic, $tokens);
+            return $output;
+        } else {
+            return $this->guzzleClient->post(
+                $this->getHTTPV1ApiUrl(),
+                [
+                    'headers' => [
+                        'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                        'Content-Type' => 'application/json'
+                    ],
+                    'body' => json_encode($param)
+                ]
+            );
+        }
+        return $output;
+
     }
 
     /**
@@ -135,44 +179,21 @@ class Client implements ClientInterface
     }
 
     /**
-     * Set your server access token here
-     *
-     * @param string $accessToken
-     *
-     * @return void
-     */
-    public function setAccessToken($accessToken)
-    {
-        $this->accessToken = $accessToken;
-    }
-
-    /**
-     * Set your project ID
+     * add your project ID
      *
      * @param string $projectId
      *
-     * @return void
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Client
      */
     public function setProjectId($projectId)
     {
         $this->projectId = $projectId;
     }
-
-    /**
-     * Build endpoint URL for Firebase HTTP V1 API
-     *
-     * @return string
-     */
     private function getHTTPV1ApiUrl()
     {
         return self::HTTPV1_API_URL_PREFIX.$this->getProjectId().self::HTTPV1_API_URL_POSTEFIX;
     }
 
-    /**
-     * Get your project ID
-     *
-     * @return string
-     */
     public function getProjectId()
     {
         return $this->projectId;
