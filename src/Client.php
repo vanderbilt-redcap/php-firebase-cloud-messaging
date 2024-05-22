@@ -85,7 +85,6 @@ class Client implements ClientInterface
             foreach ($recipients as $recipient) {
                 $tokens[] = $recipient->getToken();
             }
-            var_dump($tokens); die;
             $topic = "Topic_".date("YmdHis")."_".substr(md5(rand()), 0, 4);
             $response = $this->addTopicSubscription($topic, $tokens);
             if ($response->getStatusCode() == 200) {
