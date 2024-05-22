@@ -91,7 +91,7 @@ class Client implements ClientInterface
                 $messageArr = json_decode(json_encode($param), true);
                 unset($messageArr['message']['registration_ids']);
                 $messageArr['message']['topic'] = $topic;
-                echo json_encode($messageArr);
+                $messageArr['message']['data']['projectCode'] = $topic;
                 $output = $this->guzzleClient->post(
                                     $this->getHTTPV1ApiUrl(),
                                     [
