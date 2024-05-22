@@ -105,7 +105,8 @@ class Client implements ClientInterface
             $response = $this->removeTopicSubscription($topic, $tokens);
             return $output;
         } else {
-            print_r($param); die;
+            print_r($param);
+            echo json_encode($param); die;
             return $this->guzzleClient->post(
                 $this->getHTTPV1ApiUrl(),
                 [
