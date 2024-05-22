@@ -102,9 +102,9 @@ class Client implements ClientInterface
                                     ]
                 );
             }
-            if ($output->getStatusCode() == 200) {
+            /*if ($output->getStatusCode() == 200) {
                 $response = $this->removeTopicSubscription($topic, $tokens);
-            }
+            }*/
             return $output;
         } else {
             return $this->guzzleClient->post(
