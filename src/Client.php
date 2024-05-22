@@ -162,7 +162,8 @@ class Client implements ClientInterface
             $url,
             [
                 'headers' => [
-                    'Authorization' => sprintf('key=%s', $this->apiKey),
+                    'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                    'access_token_auth' => true,
                     'Content-Type' => 'application/json'
                 ],
                 'body' => json_encode([
