@@ -87,6 +87,7 @@ class Client implements ClientInterface
             }
             $topic = "Topic_".date("YmdHis")."_".substr(md5(rand()), 0, 4);
             $response = $this->addTopicSubscription($topic, $tokens);
+            var_dump($response);
             if ($response->getStatusCode() == 200) {
                 $messageArr = json_decode(json_encode($param), true);
                 unset($messageArr['message']['registration_ids']);
@@ -103,6 +104,8 @@ class Client implements ClientInterface
                 );
             }
             $response = $this->removeTopicSubscription($topic, $tokens);
+            var_dump($response);
+            var_dump($output);
             return $output;
         } else {
             return $this->guzzleClient->post(
