@@ -9,10 +9,14 @@ use GuzzleHttp;
 class Client implements ClientInterface
 {
     const DEFAULT_API_URL = 'https://fcm.googleapis.com/fcm/send';
+    const HTTPV1_API_URL_PREFIX = 'https://fcm.googleapis.com/v1/projects/';
+    const HTTPV1_API_URL_POSTEFIX = '/messages:send';
     const DEFAULT_TOPIC_ADD_SUBSCRIPTION_API_URL = 'https://iid.googleapis.com/iid/v1:batchAdd';
     const DEFAULT_TOPIC_REMOVE_SUBSCRIPTION_API_URL = 'https://iid.googleapis.com/iid/v1:batchRemove';
 
     private $apiKey;
+    private $accessToken;
+    private $projectId;
     private $proxyApiUrl;
     private $guzzleClient;
 
@@ -49,6 +53,18 @@ class Client implements ClientInterface
     }
 
     /**
+     * add your server access token here
+     *
+     * @param string $accessToken
+     *
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Client
+     */
+    public function setAccessToken($accessToken)
+    {
+        $this->accessToken = $accessToken;
+        return $this;
+    }
+    /**
      * sends your notification to the google servers and returns a guzzle repsonse object
      * containing their answer.
      *
@@ -59,16 +75,51 @@ class Client implements ClientInterface
      */
     public function send(Message $message)
     {
-        return $this->guzzleClient->post(
-            $this->getApiUrl(),
-            [
-                'headers' => [
-                    'Authorization' => sprintf('key=%s', $this->apiKey),
-                    'Content-Type' => 'application/json'
-                ],
-                'body' => json_encode($message)
-            ]
-        );
+        $param = ['message' => $message];
+
+        // FCM HTTP V1 does not support sending notifications to multiple devices (supported only in legacy API via registration_tokens
+        // So, Adding topic subscription, sending notification to topic, then remove topic subscription
+        $recipients = $message->getRecipients();
+        if (count($recipients) > 1) {
+            $tokens = [];
+            foreach ($recipients as $recipient) {
+                $tokens[] = $recipient->getToken();
+            }
+            $topic = "Topic_".date("YmdHis")."_".substr(md5(rand()), 0, 4);
+            $response = $this->addTopicSubscription($topic, $tokens);
+            if ($response->getStatusCode() == 200) {
+                $messageArr = json_decode(json_encode($param), true);
+                unset($messageArr['message']['registration_ids']);
+                $messageArr['message']['topic'] = $topic;
+                $output = $this->guzzleClient->post(
+                                    $this->getHTTPV1ApiUrl(),
+                                    [
+                                        'headers' => [
+                                            'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                                            'Content-Type' => 'application/json'
+                                        ],
+                                        'body' => json_encode($messageArr)
+                                    ]
+                );
+            }
+            /*if ($output->getStatusCode() == 200) {
+                $response = $this->removeTopicSubscription($topic, $tokens);
+            }*/
+            return $output;
+        } else {
+            return $this->guzzleClient->post(
+                $this->getHTTPV1ApiUrl(),
+                [
+                    'headers' => [
+                        'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                        'Content-Type' => 'application/json'
+                    ],
+                    'body' => json_encode($param)
+                ]
+            );
+        }
+        return $output;
+
     }
 
     /**
@@ -111,7 +162,8 @@ class Client implements ClientInterface
             $url,
             [
                 'headers' => [
-                    'Authorization' => sprintf('key=%s', $this->apiKey),
+                    'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                    'access_token_auth' => true,
                     'Content-Type' => 'application/json'
                 ],
                 'body' => json_encode([
@@ -126,5 +178,26 @@ class Client implements ClientInterface
     private function getApiUrl()
     {
         return isset($this->proxyApiUrl) ? $this->proxyApiUrl : self::DEFAULT_API_URL;
+    }
+
+    /**
+     * add your project ID
+     *
+     * @param string $projectId
+     *
+     * @return \Vanderbilt\PhpFirebaseCloudMessaging\Client
+     */
+    public function setProjectId($projectId)
+    {
+        $this->projectId = $projectId;
+    }
+    private function getHTTPV1ApiUrl()
+    {
+        return self::HTTPV1_API_URL_PREFIX.$this->getProjectId().self::HTTPV1_API_URL_POSTEFIX;
+    }
+
+    public function getProjectId()
+    {
+        return $this->projectId;
     }
 }

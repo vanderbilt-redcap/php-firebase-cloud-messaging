@@ -19,6 +19,7 @@ class Message implements \JsonSerializable
     private $notification;
     private $collapseKey;    
     private $priority;
+    private $android;
     private $data;
     private $recipients = [];
     private $recipientType;    
@@ -68,7 +69,11 @@ class Message implements \JsonSerializable
         $this->priority = $priority;
         return $this;
     }
-
+    public function setAndroidPriority(array $priority)
+    {
+        $this->android = $priority;
+        return $this;
+    }
     public function setData(array $data)
     {
         $this->data = $data;
@@ -166,7 +171,11 @@ class Message implements \JsonSerializable
         }
         
         if (count($this->recipients) == 1) {
-            $jsonData['to'] = $this->createTarget();    
+            if ($this->recipientType == Device::class) {
+                $jsonData['token'] = $this->createTarget();
+            } else {
+                $jsonData['topic'] = $this->createTarget();
+            }
         } elseif ($this->recipientType == Device::class) {
             $jsonData['registration_ids'] = $this->createTarget();
         } else {
@@ -185,6 +194,9 @@ class Message implements \JsonSerializable
         if ($this->notification) {
             $jsonData['notification'] = $this->notification;
         }
+        if ($this->android) {
+            $jsonData['android'] = $this->android;
+        }
 
         return $jsonData;
     }
@@ -198,7 +210,7 @@ class Message implements \JsonSerializable
             case Topic::class:
                 
                 if ($recipientCount == 1) {
-                    return sprintf('/topics/%s', current($this->recipients)->getName());    
+                    return sprintf('%s', current($this->recipients)->getName());
                     
                 } else if ($recipientCount > self::MAX_TOPICS) {
                     throw new \OutOfRangeException(sprintf('Message topic limit exceeded. Firebase supports a maximum of %u topics.', self::MAX_TOPICS));
@@ -239,5 +251,10 @@ class Message implements \JsonSerializable
                 break;
         }
         return null;
+    }
+
+    /* Get All recipients */
+    public function getRecipients() {
+        return $this->recipients;
     }
 }
