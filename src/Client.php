@@ -78,33 +78,25 @@ class Client implements ClientInterface
         $param = ['message' => $message];
 
         // FCM HTTP V1 does not support sending notifications to multiple devices (supported only in legacy API via registration_tokens
-        // So, Adding topic subscription, sending notification to topic, then remove topic subscription
+        // So, sending notification to devices in a loop (It will be rare case where same participant joined from different devices)
         $recipients = $message->getRecipients();
         if (count($recipients) > 1) {
-            $tokens = [];
             foreach ($recipients as $recipient) {
-                $tokens[] = $recipient->getToken();
-            }
-            $topic = "Topic_".date("YmdHis")."_".substr(md5(rand()), 0, 4);
-            $response = $this->addTopicSubscription($topic, $tokens);
-            if ($response->getStatusCode() == 200) {
+                $token = $recipient->getToken();
                 $messageArr = json_decode(json_encode($param), true);
                 unset($messageArr['message']['registration_ids']);
-                $messageArr['message']['topic'] = $topic;
+                $messageArr['message']['token'] = $token;
                 $output = $this->guzzleClient->post(
-                                    $this->getHTTPV1ApiUrl(),
-                                    [
-                                        'headers' => [
-                                            'Authorization' => sprintf('Bearer %s', $this->accessToken),
-                                            'Content-Type' => 'application/json'
-                                        ],
-                                        'body' => json_encode($messageArr)
-                                    ]
+                    $this->getHTTPV1ApiUrl(),
+                    [
+                        'headers' => [
+                            'Authorization' => sprintf('Bearer %s', $this->accessToken),
+                            'Content-Type' => 'application/json'
+                        ],
+                        'body' => json_encode($messageArr)
+                    ]
                 );
             }
-            /*if ($output->getStatusCode() == 200) {
-                $response = $this->removeTopicSubscription($topic, $tokens);
-            }*/
             return $output;
         } else {
             return $this->guzzleClient->post(
@@ -118,8 +110,6 @@ class Client implements ClientInterface
                 ]
             );
         }
-        return $output;
-
     }
 
     /**
